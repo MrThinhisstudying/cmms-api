@@ -14,9 +14,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ALGORITHM = "HS256"
 
-import bcrypt
-hashed = b"$2b$12$xL6UyTpJvFdhhXfrcCOD6eRot2OYYa..."  # từ DB
-print(bcrypt.checkpw(b"12345678", hashed))
+# import bcrypt
+# hashed = b"$2b$12$xL6UyTpJvFdhhXfrcCOD6eRot2OYYa..."  # từ DB
+# print(bcrypt.checkpw(b"12345678", hashed))
 # DB Dependency
 def get_db():
     db = database.SessionLocal()
