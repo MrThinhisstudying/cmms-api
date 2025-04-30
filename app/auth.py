@@ -41,11 +41,29 @@ def create_token(user_id: int):
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 # Login
+# @router.post("/login")
+# def login(data: schemas.LoginSchema, db: Session = Depends(get_db)):
+#     user = db.query(models.User).filter(models.User.email == data.email).first()
+#     if not user or not verify_password(data.password, user.hashed_password):
+#         raise HTTPException(status_code=400, detail="Sai email hoặc mật khẩu")
+#     token = create_token(user.id)
+#     return {"access_token": token}
 @router.post("/login")
 def login(data: schemas.LoginSchema, db: Session = Depends(get_db)):
+    print(f"👉 Đang login với email: {data.email}")
     user = db.query(models.User).filter(models.User.email == data.email).first()
-    if not user or not verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Sai email hoặc mật khẩu")
+    print(f"🔍 Kết quả truy vấn user: {user}")
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Không tìm thấy user")
+
+    print(f"🔐 Mật khẩu nhập: {data.password}")
+    print(f"🔐 Mật khẩu đã hash: {user.hashed_password}")
+    print(f"✅ Kết quả verify: {verify_password(data.password, user.hashed_password)}")
+
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Sai mật khẩu")
+
     token = create_token(user.id)
     return {"access_token": token}
 
