@@ -8,7 +8,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 from app.database import engine
 print("✅ Connected to:", engine.url)
 # Dữ liệu admin
-email = "kythuatvcs@gmail.com   "
+email = "kythuatvcs@gmail.com"
 password = "12345678"
 full_name = "Kỹ Thuật VCS"
 
