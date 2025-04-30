@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import models, schemas, crud, database
-
+from app import auth, users
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
@@ -27,3 +27,5 @@ def read_equipment(equipment_id: int, db: Session = Depends(get_db)):
     if db_equipment is None:
         raise HTTPException(status_code=404, detail="Equipment not found")
     return db_equipment
+app.include_router(auth.router)
+app.include_router(users.router)

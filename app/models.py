@@ -9,3 +9,11 @@ class Equipment(Base):
     code = Column(String, unique=True, index=True)
     location = Column(String)
     status = Column(String)
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    full_name = Column(String)
+    hashed_password = Column(String)
+    role = Column(String, default="nhân viên")
+    otp_code = Column(String, nullable=True)
