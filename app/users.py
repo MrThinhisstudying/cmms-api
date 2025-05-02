@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import schemas, models, database
-from app.auth_utils import get_current_user, require_role
+from app.auth_utils import get_current_user
 from passlib.context import CryptContext
 
 router = APIRouter()
@@ -15,21 +15,29 @@ def get_db():
     finally:
         db.close()
 
-# Chỉ cho admin
-def require_admin(user=Depends(get_current_user)):
-    if user.role != "admin":
-        raise HTTPException(status_code=403, detail="Chỉ admin được phép")
-    return user
+# Role check
+def require_admin(current_user: models.User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Chỉ admin mới có quyền thực hiện thao tác này"
+        )
+    return current_user
 
-# Tạo user mới
+# Tạo người dùng mới (chỉ admin)
 @router.post("/users", response_model=schemas.UserOut)
-def create_user(data: schemas.UserCreate, db: Session = Depends(get_db), admin=Depends(require_admin)):
+def create_user(
+    data: schemas.UserCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_admin)
+):
     if db.query(models.User).filter(models.User.email == data.email).first():
-        raise HTTPException(400, detail="Email đã tồn tại")
+        raise HTTPException(status_code=400, detail="Email đã tồn tại")
+    hashed_password = pwd_context.hash(data.password)
     user = models.User(
         email=data.email,
         full_name=data.full_name,
-        hashed_password=pwd_context.hash(data.password),
+        hashed_password=hashed_password,
         role=data.role,
     )
     db.add(user)
@@ -37,17 +45,24 @@ def create_user(data: schemas.UserCreate, db: Session = Depends(get_db), admin=D
     db.refresh(user)
     return user
 
-# Lấy tất cả người dùng
+# Lấy danh sách tất cả người dùng
 @router.get("/users", response_model=list[schemas.UserOut])
-def get_users(db: Session = Depends(get_db), admin=Depends(require_admin)):
+def get_users(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_admin)
+):
     return db.query(models.User).all()
 
-# Xóa user
+# Xóa người dùng theo ID
 @router.delete("/users/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_admin)
+):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        raise HTTPException(404, detail="Không tìm thấy user")
+        raise HTTPException(status_code=404, detail="Không tìm thấy user")
     db.delete(user)
     db.commit()
     return {"message": "Đã xóa user"}
