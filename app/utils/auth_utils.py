@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -10,8 +10,11 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
 ALGORITHM = "HS256"
+
+# OAuth2 config for Swagger
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
+# DB Dependency
 def get_db():
     db = database.SessionLocal()
     try:
@@ -19,7 +22,7 @@ def get_db():
     finally:
         db.close()
 
-# Giải mã và xác thực token
+# Xác thực người dùng từ JWT token
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,3 +41,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
     return user
+
+# Phân quyền theo vai trò
+def require_role(required_role: str):
+    def checker(current_user=Depends(get_current_user)):
+        if current_user.role != required_role:
+            raise HTTPException(status_code=403, detail=f"Yêu cầu vai trò '{required_role}'")
+        return current_user
+    return checker
