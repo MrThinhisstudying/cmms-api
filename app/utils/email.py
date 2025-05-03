@@ -11,6 +11,7 @@ def send_otp_email(to_email: str, otp_code: str):
     try:
         print(f"📨 Đang gửi OTP tới: {to_email} - mã: {otp_code}")
         print("🔐 RESEND_API_KEY:", os.getenv("RESEND_API_KEY"))
+        print("🔍 Response từ Resend:", response)
 
         # Gửi email sử dụng Resend API
          # Nên dùng default hoặc domain đã xác minh
