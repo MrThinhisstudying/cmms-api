@@ -15,7 +15,7 @@ load_dotenv()
 # Constants
 SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 # Create DB tables
 models.Base.metadata.create_all(bind=database.engine)

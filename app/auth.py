@@ -7,7 +7,7 @@ from jose import jwt
 import os, random
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-
+from fastapi.security import OAuth2PasswordRequestForm
 load_dotenv()
 
 router = APIRouter()
@@ -50,17 +50,22 @@ def create_token(user_id: int):
 #     token = create_token(user.id)
 #     return {"access_token": token}
 @router.post("/login")
-def login(data: schemas.LoginSchema, db: Session = Depends(get_db)):
-    print(f"👉 Đang login với email: {data.email}")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == form_data.username).first()
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Sai email hoặc mật khẩu")
+    token = create_token(user.id)
+    return {"access_token": token}
+    # print(f"👉 Đang login với email: {data.email}")
     user = db.query(models.User).filter(models.User.email == data.email).first()
-    print(f"🔍 Kết quả truy vấn user: {user}")
+    # print(f"🔍 Kết quả truy vấn user: {user}")
     
     if not user:
         raise HTTPException(status_code=400, detail="Không tìm thấy user")
 
-    print(f"🔐 Mật khẩu nhập: {data.password}")
-    print(f"🔐 Mật khẩu đã hash: {user.hashed_password}")
-    print(f"✅ Kết quả verify: {verify_password(data.password, user.hashed_password)}")
+    # print(f"🔐 Mật khẩu nhập: {data.password}")
+    # print(f"🔐 Mật khẩu đã hash: {user.hashed_password}")
+    # print(f"✅ Kết quả verify: {verify_password(data.password, user.hashed_password)}")
 
     if not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Sai mật khẩu")
