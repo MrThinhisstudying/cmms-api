@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app import schemas, models, database
 from app.utils.email import send_otp_email
 from passlib.context import CryptContext
-import jwt, os, random
+from jose import jwt
+import os, random
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
