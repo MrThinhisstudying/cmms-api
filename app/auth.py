@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import schemas, models, database
-from app.utils.email import send_email
+from app.utils.email import send_otp_email
 from passlib.context import CryptContext
 from jose import jwt
 import os, random
@@ -82,7 +82,7 @@ def forgot_password(data: schemas.ForgotPassword, db: Session = Depends(get_db))
     otp = str(random.randint(100000, 999999))
     user.otp_code = otp
     db.commit()
-    send_email(user.email, otp)
+    send_otp_email(user.email, otp)
     return {"message": "OTP đã được gửi qua email"}
 
 # Đặt lại mật khẩu
