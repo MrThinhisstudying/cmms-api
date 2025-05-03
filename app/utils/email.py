@@ -1,17 +1,19 @@
 import os
-from resend import Resend
-from dotenv import load_dotenv
+import resend
+from fastapi import FastAPI
+from typing import Dict
 
-load_dotenv()
+resend.api_key = os.environ["RESEND_API_KEY"]
 
-resend = Resend(api_key=os.getenv("RESEND_API_KEY"))
+app = FastAPI()
 
-def send_otp_email(to_email: str, otp_code: str):
-    subject = "CMMS - Mã OTP đặt lại mật khẩu"
-    body = f"Mã OTP của bạn là: {otp_code}"
-    resend.emails.send({
-        "from": "onboarding@resend.dev",  # Bạn có thể thay bằng domain riêng sau
-        "to": [to_email],
-        "subject": subject,
-        "text": body,
-    })
+@app.post("/send-email")
+def send_email() -> Dict:
+    params = {
+        "from": "onboarding@resend.dev",
+        "to": ["thinhtop869@gmail.com"],
+        "subject": "Hello World",
+        "html": "<strong>It works!</strong>",
+    }
+    email = resend.Emails.send(params)
+    return email
