@@ -75,14 +75,17 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 # Quên mật khẩu
 @router.post("/forgot-password")
-def forgot_password(data: schemas.ForgotPassword, db: Session = Depends(get_db)):
+def forgot_password(data: schemas.ForgotPassword, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == data.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Email không tồn tại")
     otp = str(random.randint(100000, 999999))
     user.otp_code = otp
     db.commit()
-    send_otp_email(user.email, otp)
+    
+    # Gửi email không chặn luồng chính
+    background_tasks.add_task(send_otp_email, user.email, otp)
+
     return {"message": "OTP đã được gửi qua email"}
 
 # Đặt lại mật khẩu
