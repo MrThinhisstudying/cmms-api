@@ -8,24 +8,21 @@ load_dotenv()
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 def send_otp_email(to_email: str, otp_code: str):
-    try:
-        print(f"📨 Đang gửi OTP tới: {to_email} - mã: {otp_code}")
-        print("🔐 RESEND_API_KEY:", os.getenv("RESEND_API_KEY"))
-        
+    import resend
+    import os
 
-        # Gửi email sử dụng Resend API
-         # Nên dùng default hoặc domain đã xác minh
-         # https://resend.com/docs/api-reference/emails/send-email  
-         
+    resend.api_key = os.getenv("RESEND_API_KEY")
+    print(f"🔐 RESEND_API_KEY: {resend.api_key}")
+    print(f"📨 Gửi tới: {to_email} - mã: {otp_code}")
+
+    try:
         response = resend.Emails.send({
-            "from": "onboarding@resend.dev",  # Nên dùng default hoặc domain đã xác minh
+            "from": "onboarding@resend.dev",  # ✅ sender được Resend cho phép mặc định
             "to": [to_email],
             "subject": "CMMS - Mã OTP đặt lại mật khẩu",
             "html": f"<p>Mã OTP của bạn là: <strong>{otp_code}</strong></p>"
         })
-
-        print("✅ Gửi email thành công:", response)
-        return response
+        print("✅ Đã gửi:", response)
     except Exception as e:
-        print("❌ Lỗi khi gửi email:", str(e))
-        raise
+        print("❌ Gửi lỗi:", str(e))
+
