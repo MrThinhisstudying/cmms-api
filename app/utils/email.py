@@ -4,12 +4,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Cấu hình API Key
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 def send_otp_email(to_email: str, otp_code: str):
-    return resend.Emails.send({
-        "from": "thinhtop869@gmail.com",  # Bạn có thể thay đổi nếu đã xác minh domain riêng
-        "to": [to_email],
-        "subject": "CMMS - Mã OTP đặt lại mật khẩu",
-        "html": f"<p>Mã OTP của bạn là: <strong>{otp_code}</strong></p>"
-    })
+    try:
+        print(f"📨 Đang gửi OTP tới: {to_email} - mã: {otp_code}")
+
+        response = resend.Emails.send({
+            "from": "onboarding@resend.dev",  # Nên dùng default hoặc domain đã xác minh
+            "to": [to_email],
+            "subject": "CMMS - Mã OTP đặt lại mật khẩu",
+            "html": f"<p>Mã OTP của bạn là: <strong>{otp_code}</strong></p>"
+        })
+
+        print("✅ Gửi email thành công:", response)
+        return response
+    except Exception as e:
+        print("❌ Lỗi khi gửi email:", str(e))
+        raise
