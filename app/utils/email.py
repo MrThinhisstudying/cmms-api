@@ -1,24 +1,22 @@
+import smtplib
+import ssl
 import os
-import resend
+from email.message import EmailMessage
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Thiết lập API key
-resend.api_key = os.getenv("RESEND_API_KEY")
+EMAIL_USER = os.getenv("EMAIL_USER")  # Gmail của bạn
+EMAIL_PASSWORD = os.getenv("EMAIL_PASS")  # App Password (16 ký tự)
 
 def send_otp_email(to_email: str, otp_code: str):
-    print(f"📨 Gửi tới: {to_email} - mã: {otp_code}")
-    print(f"🔐 RESEND_API_KEY: {resend.api_key}")
+    msg = EmailMessage()
+    msg['Subject'] = "CMMS - Mã OTP đặt lại mật khẩu"
+    msg['From'] = EMAIL_USER
+    msg['To'] = to_email
+    msg.set_content(f"Mã OTP của bạn là: {otp_code}")
 
-    try:
-        response = resend.Emails.send({
-            "from": "onboarding@resend.dev",  # default sender
-            "to": [to_email],
-            "subject": "CMMS - Mã OTP đặt lại mật khẩu",
-            "html": f"<p>Mã OTP của bạn là: <strong>{otp_code}</strong></p>"
-        })
-        print("✅ Đã gửi:", response)
-    except Exception as e:
-        print("❌ Lỗi khi gửi email:", type(e).__name__, "-", str(e))
-        raise
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
+        smtp.login(EMAIL_USER, EMAIL_PASSWORD)
+        smtp.send_message(msg)
