@@ -16,7 +16,14 @@ def send_otp_email(to_email: str, otp_code: str):
     msg['To'] = to_email
     msg.set_content(f"Mã OTP của bạn là: {otp_code}")
 
+    print(f"📨 Gửi OTP tới: {to_email} - mã: {otp_code}")
+    print(f"📤 Gửi từ: {EMAIL_USER}")
+
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
-        smtp.login(EMAIL_USER, EMAIL_PASSWORD)
-        smtp.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
+            smtp.login(EMAIL_USER, EMAIL_PASSWORD)
+            smtp.send_message(msg)
+        print("✅ Email đã được gửi thành công")
+    except Exception as e:
+        print("❌ Lỗi gửi email:", str(e))
